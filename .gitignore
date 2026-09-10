@@ -1,2 +1,5 @@
 .idea
 .vscode
+
+# ビルド時に Website/ へ生成される
+Website/index.json

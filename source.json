@@ -1,18 +1,18 @@
 {
-    "name": "HatzeLaboratory VPM Listing",
+    "name": "HatzeLaboratory Project",
     "id": "com.hatzelaboratory.vpm",
-    "url": "https://mtytheone.github.io/Muchio_Font_Tool_Listing/index.json",
+    "url": "https://mtytheone.github.io/HatzeLaboratoryVpm/index.json",
     "author": {
         "name": "HatzeLaboratory",
         "url": "https://github.com/mtytheone"
     },
-    "description": "HatzeLaboratory が公開している VRChat 向けパッケージのリスティング",
+    "description": "HatzeLaboratoryが公開しているVRChat向けパッケージ",
     "infoLink": {
-        "url": "https://github.com/mtytheone/Muchio_Font_Tool",
+        "url": "https://github.com/mtytheone/HatzeLaboratoryVpm",
         "text": "View on GitHub"
     },
     "githubRepos": [
-        "mtytheone/Muchio_Font_Tool"
+        "mtytheone/MuchioFontAtlasTool"
     ],
     "packages": []
 }
