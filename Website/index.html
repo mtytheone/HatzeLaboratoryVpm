@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HatzeLaboratory VPM Listing</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f7f7f8;
+  --fg: #1b1b1f;
+  --muted: #5f6368;
+  --card: #ffffff;
+  --border: #d9dade;
+  --accent: #2f6fd0;
+  --accent-fg: #ffffff;
+  --code-bg: #eceef1;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16171a;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --card: #1f2125;
+    --border: #33363c;
+    --accent: #6ea8ff;
+    --accent-fg: #10131a;
+    --code-bg: #101216;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2.5rem 1.25rem 4rem;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  line-height: 1.7;
+}
+.wrap { max-width: 780px; margin: 0 auto; }
+h1 { font-size: 1.75rem; margin: 0 0 .35rem; }
+h2 { font-size: 1.15rem; margin: 2.25rem 0 .75rem; }
+.lead { color: var(--muted); margin: 0 0 1.75rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+input[type=text] {
+  flex: 1 1 22rem;
+  min-width: 0;
+  padding: .55rem .7rem;
+  font-family: ui-monospace, "Consolas", monospace;
+  font-size: .9rem;
+  color: var(--fg);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+button {
+  padding: .55rem 1.1rem;
+  font-size: .95rem;
+  font-family: inherit;
+  color: var(--fg);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.accent { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; }
+button:hover { filter: brightness(1.08); }
+.pkg-name { font-weight: 600; }
+.pkg-id {
+  font-family: ui-monospace, "Consolas", monospace;
+  font-size: .85rem;
+  color: var(--muted);
+}
+.pkg-desc { margin: .4rem 0 0; white-space: pre-line; }
+.ver {
+  display: inline-block;
+  margin-left: .5rem;
+  padding: .05rem .5rem;
+  font-size: .8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+}
+.note { color: var(--muted); font-size: .9rem; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>HatzeLaboratory VPM Listing</h1>
+  <p class="lead">VRChat Creator Companion (VCC) 用のパッケージリスティングです。</p>
+
+  <div class="card">
+    <div class="row">
+      <input type="text" id="listingUrl" readonly aria-label="Listing URL">
+      <button class="accent" id="addToVcc">Add to VCC</button>
+      <button id="copyUrl">Copy</button>
+    </div>
+    <p class="note" style="margin-bottom:0">
+      ボタンが反応しない場合は、上のURLをコピーして VCC の
+      <b>Settings &gt; Packages &gt; Add Repository</b> に貼り付けてください。
+    </p>
+  </div>
+
+  <h2>収録パッケージ</h2>
+  <div id="packages">
+    <p class="note">読み込み中…</p>
+  </div>
+
+  <h2>リンク</h2>
+  <p class="note">
+    <a href="https://github.com/mtytheone/Muchio_Font_Tool" target="_blank" rel="noopener">Muchio FontAtlasTool リポジトリ</a>
+  </p>
+
+</div>
+
+<script>
+(function ()
+{
+  var listingUrl = new URL("index.json", window.location.href).href;
+  document.getElementById("listingUrl").value = listingUrl;
+
+  document.getElementById("addToVcc").addEventListener("click", function ()
+  {
+    window.location.assign("vcc://vpm/addRepo?url=" + encodeURIComponent(listingUrl));
+  });
+
+  document.getElementById("copyUrl").addEventListener("click", function ()
+  {
+    var button = this;
+    navigator.clipboard.writeText(listingUrl).then(function ()
+    {
+      var original = button.textContent;
+      button.textContent = "Copied";
+      setTimeout(function () { button.textContent = original; }, 1500);
+    });
+  });
+
+  function latestVersion(versions)
+  {
+    var keys = Object.keys(versions);
+    keys.sort(function (a, b)
+    {
+      var pa = a.split(/[.\-+]/);
+      var pb = b.split(/[.\-+]/);
+      for (var i = 0; i < Math.max(pa.length, pb.length); i++)
+      {
+        var na = parseInt(pa[i], 10);
+        var nb = parseInt(pb[i], 10);
+        if (isNaN(na) && isNaN(nb)) { continue; }
+        if (isNaN(na)) { return 1; }
+        if (isNaN(nb)) { return -1; }
+        if (na !== nb) { return nb - na; }
+      }
+      return 0;
+    });
+    return versions[keys[0]];
+  }
+
+  function render(listing)
+  {
+    var host = document.getElementById("packages");
+    var names = Object.keys(listing.packages || {});
+    if (names.length === 0)
+    {
+      host.innerHTML = '<p class="note">まだパッケージがありません。</p>';
+      return;
+    }
+
+    host.innerHTML = "";
+    names.forEach(function (name)
+    {
+      var pkg = latestVersion(listing.packages[name].versions);
+      var card = document.createElement("div");
+      card.className = "card";
+
+      var title = document.createElement("div");
+      title.className = "pkg-name";
+      title.textContent = pkg.displayName || pkg.name;
+
+      var badge = document.createElement("span");
+      badge.className = "ver";
+      badge.textContent = "v" + pkg.version;
+      title.appendChild(badge);
+
+      var id = document.createElement("div");
+      id.className = "pkg-id";
+      id.textContent = pkg.name;
+
+      var desc = document.createElement("p");
+      desc.className = "pkg-desc";
+      desc.textContent = pkg.description || "";
+
+      card.appendChild(title);
+      card.appendChild(id);
+      card.appendChild(desc);
+      host.appendChild(card);
+    });
+  }
+
+  fetch(listingUrl)
+    .then(function (response) { return response.json(); })
+    .then(render)
+    .catch(function ()
+    {
+      document.getElementById("packages").innerHTML =
+        '<p class="note">index.json を読み込めませんでした。</p>';
+    });
+})();
+</script>
+</body>
+</html>
