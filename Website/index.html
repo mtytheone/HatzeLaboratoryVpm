@@ -73,6 +73,8 @@ button {
 button.accent { background: var(--accent); color: var(--accent-fg); border-color: transparent; font-weight: 600; }
 button:hover { filter: brightness(1.08); }
 .pkg-name { font-weight: 600; }
+.pkg-name a { text-decoration: none; }
+.pkg-name a:hover { text-decoration: underline; }
 .pkg-id {
   font-family: ui-monospace, "Consolas", monospace;
   font-size: .85rem;
@@ -112,12 +114,6 @@ a { color: var(--accent); }
   <div id="packages">
     <p class="note">読み込み中…</p>
   </div>
-
-  <h2>リンク</h2>
-  <p class="note">
-    <a href="https://github.com/mtytheone/HatzeLaboratoryVpm" target="_blank" rel="noopener">このリスティングのリポジトリ</a>
-  </p>
-
 </div>
 
 <script src="app.js"></script>

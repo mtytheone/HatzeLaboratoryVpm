@@ -63,7 +63,20 @@
 
       var title = document.createElement("div");
       title.className = "pkg-name";
-      title.textContent = pkg.displayName || pkg.name;
+
+      // package.json の documentationUrl があればタイトルをリンクにする。
+      // javascript: などを弾くため http(s) のみ受け付ける
+      var docUrl = pkg.documentationUrl || "";
+      var hasLink = /^https?:\/\//i.test(docUrl);
+      var label = document.createElement(hasLink ? "a" : "span");
+      label.textContent = pkg.displayName || pkg.name;
+      if (hasLink)
+      {
+        label.href = docUrl;
+        label.target = "_blank";
+        label.rel = "noopener";
+      }
+      title.appendChild(label);
 
       var badge = document.createElement("span");
       badge.className = "ver";
