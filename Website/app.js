@@ -44,6 +44,26 @@
     return versions[keys[0]];
   }
 
+  // パッケージのリポジトリURLを求める。
+  // zip の url は GitHub のリリースを指しているので、そこから owner/repo を取り出す。
+  // GitHub 以外で配布している場合は documentationUrl にフォールバックする。
+  // javascript: などを弾くため、最終的に http(s) のURLしか返さない
+  function repositoryUrl(pkg)
+  {
+    var match = /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/releases\//i.exec(pkg.url || "");
+    if (match)
+    {
+      return "https://github.com/" + match[1] + "/" + match[2];
+    }
+
+    if (/^https?:\/\//i.test(pkg.documentationUrl || ""))
+    {
+      return pkg.documentationUrl;
+    }
+
+    return "";
+  }
+
   function render(listing)
   {
     var host = document.getElementById("packages");
@@ -64,15 +84,13 @@
       var title = document.createElement("div");
       title.className = "pkg-name";
 
-      // package.json の documentationUrl があればタイトルをリンクにする。
-      // javascript: などを弾くため http(s) のみ受け付ける
-      var docUrl = pkg.documentationUrl || "";
-      var hasLink = /^https?:\/\//i.test(docUrl);
-      var label = document.createElement(hasLink ? "a" : "span");
+      // タイトルをパッケージのリポジトリへのリンクにする
+      var linkUrl = repositoryUrl(pkg);
+      var label = document.createElement(linkUrl ? "a" : "span");
       label.textContent = pkg.displayName || pkg.name;
-      if (hasLink)
+      if (linkUrl)
       {
-        label.href = docUrl;
+        label.href = linkUrl;
         label.target = "_blank";
         label.rel = "noopener";
       }
